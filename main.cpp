@@ -1,8 +1,5 @@
 #include <iostream>
-#include <limits>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
+#include <bits/stdc++.h>
 #include <queue>
 #include <set>
 #include <utility>
@@ -19,8 +16,7 @@ using namespace std;
  *	MAIN
  */
 
-class Node {       // The class
-public:             // Access specifier
+struct Node {
     unsigned int	lev;
     float			weight;
     float			cost;
@@ -29,9 +25,11 @@ public:             // Access specifier
         lev=l;
         weight=w;
         cost=c;
-        inputs=std::move(i);
+        inputs=move(i);
+        //state= move(s);
     }
     bool operator <(const Node &n) const{
+        // We compare the cost. If costs are equal we need to find another way because otherwise both would be deleted from mutliset.
         if (cost==n.cost){
             if (inputs.size()==n.inputs.size()){
                 for(auto it1 = inputs.begin(), it2 = n.inputs.begin();
@@ -46,28 +44,37 @@ public:             // Access specifier
     }
 };
 
+vector<float> bb(const vector<float>& cost_tab, const vector<float>& weight_tab, const float& max_weight, const vector<int>& possible_inputs);
 
 int main() {
 
 
-    float cost_tab[TABSIZE] = {-40.f, -50.f, -100.f, -95.f, -30.f};
-    float weight_tab[TABSIZE] = {2.f, 3.14, 1.98, 5.f, 3.f};
+    vector<float> cost_tab = {-40.f, -50.f, -100.f, -95.f, -30.f};
+    vector<float> weight_tab = {2.f, 3.14, 1.98, 5.f, 3.f};
     const float max_weight =10;
-    int possible_inputs[2]={0,1};
-    const int max_level =5;
+    vector<int> possible_inputs={0,1};
+
+    auto  solution = bb(cost_tab,weight_tab,max_weight,possible_inputs);
+
+
+    //cout << current_best->cost << endl;
+    for (float cb : solution) cout << cb << endl;
+
+
+
+    return 0;
+}
+
+vector<float> bb(const vector<float>& cost_tab, const vector<float>& weight_tab, const float& max_weight, const vector<int>& possible_inputs){
+    // Prepare everything
     multiset<Node>::iterator iter;
-
-    Node* current_best= nullptr;
+    Node* current_best= nullptr; // The final node, currently empty
     bool if_find_first_solution_flag = false;
-
-
     Node parent(0,0,0, {});
-    multiset<Node> unchecked_nodes={parent};
-
-    int iterations = 0;
+    multiset<Node> unchecked_nodes={parent}; // List of nodes to check
+    int max_level = cost_tab.size();
 
     while (!unchecked_nodes.empty()){
-        iterations++;
         Node current_node = (*unchecked_nodes.begin());
         //if ((if_find_first_solution_flag)&&current_best->cost>current_node.cost) break;
         for (int x : possible_inputs)
@@ -95,79 +102,9 @@ int main() {
         unchecked_nodes.erase(current_node);
         //delete current_node;
     }
-
-    cout << current_best->cost << endl;
-    for (int cb : current_best->inputs) cout << cb << endl;
-
-
-
-    return 0;
+    vector<float> solution;
+    for(int & input : current_best->inputs) {
+        solution.push_back(possible_inputs[input]);
+    }
+    return solution;
 }
-	/*for(int i = 0; i < TABSIZE; i++){
-		std::cout << content[i] << endl;
-	}std::cout << '\n';
-
-	float fcost = 0.f;
-	for(int i = 0; i < TABSIZE; i++){
-		fcost += content[i] * cost[i];
-	}std::cout << "Cost = " << fcost << endl;/*
-
-
-}
-
-/*
- *	ALGOS
- */
-
-/*struct uc{
-	float ucRatio;
-	unsigned int index;
-};*/
-
-/*int cmp(const void* elm1, const void* elm2){
-	int a = ((uc*)elm1)->ucRatio;
-	int b = ((uc*)elm2)->ucRatio;
-	return a > b ? -1 : a < b;
-}*/
-
-/*
- *	BRANCH & BOUND
- */
-
-
-
-/*float calculateBound(bbNode nd, float* cost, float* utility, uc* ucTab, float maxCost, unsigned int size){
-	float addCost = 0.f;
-	float addBenef = 0.f;
-
-	for(int i = nd.lev; i < size; i++){
-		if(nd.cost + addCost + cost[ucTab[i].index] > maxCost){
-			//	Partial add of the best c/u object
-			float partialBenefit = ((maxCost - addCost) / cost[ucTab[i].index]) * utility[ucTab[i].index];
-			return nd.benef + addBenef + partialBenefit;
-		}
-		addCost += cost[ucTab[i].index];
-		addBenef += utility[ucTab[i].index];
-	}
-	return nd.cost + addCost;
-}
-
-float calculateBenefit(bbNode nd, float* utility, unsigned int size){
-	float res = 0.f;
-	for(int i = 0; i < size; i++)
-		if(nd.set[i])
-			res+=utility[i];
-	return res;
-}
-
-void cpyNode(bbNode* dest, bbNode src, unsigned int size){
-	*dest = src;
-	dest->set = (bool*)malloc(size * sizeof(bool));
-	memcpy(dest->set, src.set, size * sizeof(bool));
-}
-
-void setNextObject(bbNode* nd, bool val, float* cost, uc* ucTab){
-	nd->set[ucTab[nd->lev].index] = val;
-	nd->cost += val * cost[ucTab[nd->lev].index];
-	nd->lev++;
-}*/
